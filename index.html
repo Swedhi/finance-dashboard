@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Finflow — Finance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0a0d14;
+    --bg2: #111520;
+    --bg3: #161b28;
+    --card: #1a2035;
+    --card2: #1f2640;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f2f8;
+    --text2: #8a93b2;
+    --text3: #555f82;
+    --accent: #7c6ff7;
+    --accent2: #a096ff;
+    --green: #2dd4a0;
+    --green2: #1a7a5e;
+    --red: #f45c7a;
+    --red2: #7a1f35;
+    --amber: #f0a444;
+    --amber2: #7a4e10;
+    --blue: #4898e8;
+    --blue2: #1a3d6e;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --r: 12px;
+    --r2: 18px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-text {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--accent2); }
+  .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 8px 6px;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 14px;
+    font-weight: 400;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: rgba(124,111,247,0.1); color: var(--text); }
+  .nav-item.active { background: rgba(124,111,247,0.18); color: var(--accent2); font-weight: 500; }
+  .nav-icon { width: 18px; height: 18px; opacity: 0.8; flex-shrink: 0; }
+
+  .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+  .role-selector {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .role-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  .role-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 7px 10px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a93b2' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* Main */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .header-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
+  .header-title span { color: var(--text3); font-size: 14px; font-weight: 400; margin-left: 8px; font-family: var(--font-body); }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--card);
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .btn:hover { background: var(--card2); color: var(--text); border-color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .role-badge.admin { background: rgba(124,111,247,0.2); color: var(--accent2); }
+  .role-badge.viewer { background: rgba(138,147,178,0.15); color: var(--text2); }
+
+  /* Content */
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+  .section-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* Summary Cards */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.07;
+  }
+  .stat-card.balance::before { background: var(--accent); }
+  .stat-card.income::before { background: var(--green); }
+  .stat-card.expense::before { background: var(--red); }
+  .stat-card.savings::before { background: var(--amber); }
+
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    font-size: 16px;
+  }
+  .stat-icon.balance { background: rgba(124,111,247,0.15); }
+  .stat-icon.income { background: rgba(45,212,160,0.15); }
+  .stat-icon.expense { background: rgba(244,92,122,0.15); }
+  .stat-icon.savings { background: rgba(240,164,68,0.15); }
+
+  .stat-label { font-size: 12px; color: var(--text2); letter-spacing: 0.3px; margin-bottom: 6px; text-transform: uppercase; font-weight: 500; }
+  .stat-value { font-family: var(--font-head); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+  .stat-value.balance { color: var(--accent2); }
+  .stat-value.income { color: var(--green); }
+  .stat-value.expense { color: var(--red); }
+  .stat-value.savings { color: var(--amber); }
+  .stat-change { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .stat-change.up { color: var(--green); }
+  .stat-change.down { color: var(--red); }
+
+  /* Charts Row */
+  .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 20px;
+  }
+  .chart-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .chart-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+
+  .chart-legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Donut chart wrapper */
+  .donut-wrapper { position: relative; width: 100%; height: 220px; }
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .donut-center-val { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text); }
+  .donut-center-label { font-size: 11px; color: var(--text3); }
+
+  /* Transactions */
+  .tx-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 180px;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-box::placeholder { color: var(--text3); }
+  .search-box:focus { border-color: var(--accent); }
+
+  .filter-select {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 9px 32px 9px 12px;
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a93b2' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  .sort-btn {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 9px 14px;
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .sort-btn:hover { border-color: var(--accent); color: var(--text); }
+  .sort-btn.active { border-color: var(--accent); color: var(--accent2); }
+
+  /* Transaction List */
+  .tx-table-wrap { overflow-x: auto; border-radius: var(--r2); background: var(--card); border: 1px solid var(--border); }
+  .tx-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  .tx-table thead tr { border-bottom: 1px solid var(--border); }
+  .tx-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .tx-table th:hover { color: var(--text2); }
+  .tx-table th.sorted { color: var(--accent2); }
+  .tx-table td { padding: 14px 16px; vertical-align: middle; }
+  .tx-table tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .tx-table tbody tr:last-child { border-bottom: none; }
+  .tx-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .tx-cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .tx-amount { font-family: var(--font-head); font-size: 15px; font-weight: 600; }
+  .tx-amount.income { color: var(--green); }
+  .tx-amount.expense { color: var(--red); }
+  .tx-date { color: var(--text3); font-size: 12px; }
+  .tx-desc { font-size: 13px; font-weight: 500; }
+  .tx-desc-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* Type badge */
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .type-badge.income { background: rgba(45,212,160,0.12); color: var(--green); }
+  .type-badge.expense { background: rgba(244,92,122,0.12); color: var(--red); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 14px; }
+
+  /* Add Tx Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .modal-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; font-weight: 600; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+  /* Insights */
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .insight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .insight-card:hover { border-color: var(--border2); }
+  .insight-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .insight-text .insight-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .insight-text .insight-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .insight-text .insight-val { font-family: var(--font-head); font-size: 20px; font-weight: 700; margin-top: 6px; }
+
+  /* Progress bar */
+  .progress-bar-wrap { margin-top: 8px; }
+  .progress-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .progress-bar-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+  /* Monthly comparison table */
+  .monthly-table { width: 100%; border-collapse: collapse; }
+  .monthly-table td, .monthly-table th { padding: 8px 12px; text-align: left; font-size: 13px; }
+  .monthly-table th { color: var(--text3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .monthly-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+
+  /* Hamburger */
+  .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 4px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .hamburger { display: flex; }
+    .content { padding: 16px; }
+    .header { padding: 14px 16px; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  /* Tab navigation */
+  .tab-nav { display: flex; gap: 4px; background: var(--card); border-radius: 12px; padding: 4px; margin-bottom: 20px; width: fit-content; }
+  .tab-btn {
+    padding: 8px 16px;
+    border-radius: 9px;
+    border: none;
+    background: none;
+    color: var(--text3);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* Overlay */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+  .overlay.show { display: block; }
+
+  /* Notification */
+  .notif {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    z-index: 300;
+    animation: notifIn 0.3s ease;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  @keyframes notifIn { from { opacity:0; transform: translateY(10px); } }
+  .notif.success { border-color: rgba(45,212,160,0.3); }
+  .notif.error { border-color: rgba(244,92,122,0.3); }
+
+  /* Category colors */
+  .cat-food { background: rgba(240,164,68,0.15); color: #f0a444; }
+  .cat-transport { background: rgba(72,152,232,0.15); color: #4898e8; }
+  .cat-shopping { background: rgba(244,92,122,0.15); color: #f45c7a; }
+  .cat-entertainment { background: rgba(124,111,247,0.15); color: #a096ff; }
+  .cat-health { background: rgba(45,212,160,0.15); color: #2dd4a0; }
+  .cat-utilities { background: rgba(138,147,178,0.15); color: #8a93b2; }
+  .cat-salary { background: rgba(45,212,160,0.15); color: #2dd4a0; }
+  .cat-freelance { background: rgba(124,111,247,0.15); color: #a096ff; }
+  .cat-investment { background: rgba(72,152,232,0.15); color: #4898e8; }
+  .cat-other { background: rgba(138,147,178,0.15); color: #8a93b2; }
+
+  /* Delete btn */
+  .delete-btn { background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px; border-radius: 6px; transition: all 0.15s; font-size: 14px; }
+  .delete-btn:hover { color: var(--red); background: rgba(244,92,122,0.1); }
+
+  .viewer-note {
+    background: rgba(138,147,178,0.1);
+    border: 1px solid rgba(138,147,178,0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const CATEGORIES = ['Food','Transport','Shopping','Entertainment','Health','Utilities','Salary','Freelance','Investment','Other'];
+const CAT_ICONS = { Food:'🍜', Transport:'🚗', Shopping:'🛍️', Entertainment:'🎬', Health:'💊', Utilities:'💡', Salary:'💼', Freelance:'💻', Investment:'📈', Other:'📦' };
+const EXPENSE_CATS = ['Food','Transport','Shopping','Entertainment','Health','Utilities','Other'];
+const INCOME_CATS = ['Salary','Freelance','Investment','Other'];
+
+const INITIAL_TXS = [
+  { id:1,  date:'2025-03-01', desc:'Monthly Salary',        category:'Salary',        type:'income',  amount:5500 },
+  { id:2,  date:'2025-03-03', desc:'Grocery Store',         category:'Food',          type:'expense', amount:180 },
+  { id:3,  date:'2025-03-05', desc:'Uber Eats',             category:'Food',          type:'expense', amount:42 },
+  { id:4,  date:'2025-03-07', desc:'Netflix',               category:'Entertainment', type:'expense', amount:18 },
+  { id:5,  date:'2025-03-08', desc:'Freelance Project',     category:'Freelance',     type:'income',  amount:1200 },
+  { id:6,  date:'2025-03-10', desc:'Electricity Bill',      category:'Utilities',     type:'expense', amount:95 },
+  { id:7,  date:'2025-03-11', desc:'Amazon Shopping',       category:'Shopping',      type:'expense', amount:230 },
+  { id:8,  date:'2025-03-12', desc:'Bus Pass',              category:'Transport',     type:'expense', amount:60 },
+  { id:9,  date:'2025-03-14', desc:'Pharmacy',              category:'Health',        type:'expense', amount:55 },
+  { id:10, date:'2025-03-15', desc:'Stock Dividends',       category:'Investment',    type:'income',  amount:340 },
+  { id:11, date:'2025-03-16', desc:'Restaurant Dinner',     category:'Food',          type:'expense', amount:88 },
+  { id:12, date:'2025-03-18', desc:'Gym Membership',        category:'Health',        type:'expense', amount:45 },
+  { id:13, date:'2025-03-19', desc:'Spotify',               category:'Entertainment', type:'expense', amount:10 },
+  { id:14, date:'2025-03-20', desc:'Zomato Order',          category:'Food',          type:'expense', amount:35 },
+  { id:15, date:'2025-03-22', desc:'Internet Bill',         category:'Utilities',     type:'expense', amount:70 },
+  { id:16, date:'2025-03-24', desc:'Freelance Design',      category:'Freelance',     type:'income',  amount:800 },
+  { id:17, date:'2025-03-25', desc:'Petrol',                category:'Transport',     type:'expense', amount:50 },
+  { id:18, date:'2025-03-26', desc:'Clothes Shopping',      category:'Shopping',      type:'expense', amount:150 },
+  { id:19, date:'2025-03-28', desc:'Dentist Visit',         category:'Health',        type:'expense', amount:120 },
+  { id:20, date:'2025-03-30', desc:'YouTube Premium',       category:'Entertainment', type:'expense', amount:14 },
+  // February (for comparison)
+  { id:21, date:'2025-02-01', desc:'Monthly Salary',        category:'Salary',        type:'income',  amount:5500 },
+  { id:22, date:'2025-02-04', desc:'Supermarket',           category:'Food',          type:'expense', amount:160 },
+  { id:23, date:'2025-02-07', desc:'Electricity',           category:'Utilities',     type:'expense', amount:90 },
+  { id:24, date:'2025-02-10', desc:'Freelance Work',        category:'Freelance',     type:'income',  amount:950 },
+  { id:25, date:'2025-02-12', desc:'Shopping Mall',         category:'Shopping',      type:'expense', amount:200 },
+  { id:26, date:'2025-02-14', desc:'Valentine Dinner',      category:'Food',          type:'expense', amount:110 },
+  { id:27, date:'2025-02-18', desc:'Movie Tickets',         category:'Entertainment', type:'expense', amount:35 },
+  { id:28, date:'2025-02-22', desc:'Cab Rides',             category:'Transport',     type:'expense', amount:75 },
+  { id:29, date:'2025-02-25', desc:'Stock Dividends',       category:'Investment',    type:'income',  amount:280 },
+  { id:30, date:'2025-02-28', desc:'Medical Checkup',       category:'Health',        type:'expense', amount:80 },
+];
+
+// ─── Context ───────────────────────────────────────────────────────────────────
+const AppCtx = createContext(null);
+
+function AppProvider({ children }) {
+  const [role, setRole] = useState('admin');
+  const [transactions, setTransactions] = useState(() => {
+    try { const s = localStorage.getItem('finflow_txs'); return s ? JSON.parse(s) : INITIAL_TXS; } catch { return INITIAL_TXS; }
+  });
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    try { localStorage.setItem('finflow_txs', JSON.stringify(transactions)); } catch {}
+  }, [transactions]);
+
+  const addTx = useCallback((tx) => {
+    setTransactions(prev => [{ ...tx, id: Date.now() }, ...prev]);
+    showNotif('Transaction added successfully!', 'success');
+  }, []);
+
+  const deleteTx = useCallback((id) => {
+    setTransactions(prev => prev.filter(t => t.id !== id));
+    showNotif('Transaction deleted.', 'success');
+  }, []);
+
+  const showNotif = useCallback((msg, type='success') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  }, []);
+
+  const stats = useMemo(() => {
+    const mar = transactions.filter(t => t.date.startsWith('2025-03'));
+    const feb = transactions.filter(t => t.date.startsWith('2025-02'));
+    const marIncome = mar.filter(t => t.type==='income').reduce((s,t) => s+t.amount, 0);
+    const marExpense = mar.filter(t => t.type==='expense').reduce((s,t) => s+t.amount, 0);
+    const febIncome = feb.filter(t => t.type==='income').reduce((s,t) => s+t.amount, 0);
+    const febExpense = feb.filter(t => t.type==='expense').reduce((s,t) => s+t.amount, 0);
+    return {
+      balance: marIncome - marExpense,
+      income: marIncome,
+      expense: marExpense,
+      savings: marIncome > 0 ? Math.round(((marIncome-marExpense)/marIncome)*100) : 0,
+      febIncome, febExpense,
+      incomeChange: febIncome > 0 ? Math.round(((marIncome-febIncome)/febIncome)*100) : 0,
+      expenseChange: febExpense > 0 ? Math.round(((marExpense-febExpense)/febExpense)*100) : 0,
+    };
+  }, [transactions]);
+
+  return React.createElement(AppCtx.Provider, {
+    value: { role, setRole, transactions, addTx, deleteTx, stats, notification }
+  }, children);
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = (n) => '₹' + Math.abs(n).toLocaleString('en-IN');
+const fmtDate = (d) => { const dt = new Date(d); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); };
+const catClass = (c) => 'cat-' + c.toLowerCase();
+
+// ─── Icons ─────────────────────────────────────────────────────────────────────
+function Icon({ name, size=18 }) {
+  const icons = {
+    dashboard: `<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>`,
+    txn: `<path d="M19 7l-7-7-7 7m7-7v18M5 17l7 7 7-7"/>`,
+    insights: `<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>`,
+    add: `<path d="M12 5v14M5 12h14"/>`,
+    sort: `<path d="M3 6h18M7 12h10M11 18h2"/>`,
+    trash: `<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`,
+    close: `<path d="M18 6L6 18M6 6l12 12"/>`,
+    menu: `<path d="M3 12h18M3 6h18M3 18h18"/>`,
+    arrow_up: `<path d="M12 19V5M5 12l7-7 7 7"/>`,
+    arrow_down: `<path d="M12 5v14M5 12l7 7 7-7"/>`,
+    shield: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`,
+    eye: `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`,
+  };
+  return React.createElement('svg', {
+    viewBox:'0 0 24 24', width:size, height:size,
+    fill:'none', stroke:'currentColor',
+    strokeWidth:1.8, strokeLinecap:'round', strokeLinejoin:'round',
+    style:{ flexShrink:0 },
+    dangerouslySetInnerHTML:{ __html: icons[name] || '' }
+  });
+}
+
+// ─── Stat Card ─────────────────────────────────────────────────────────────────
+function StatCard({ label, value, type, change, icon }) {
+  const pos = change >= 0;
+  return React.createElement('div', { className: `stat-card ${type}` },
+    React.createElement('div', { className: `stat-icon ${type}` }, icon),
+    React.createElement('div', { className: 'stat-label' }, label),
+    React.createElement('div', { className: `stat-value ${type}` }, value),
+    change !== undefined && React.createElement('div', { className: `stat-change ${pos ? 'up' : 'down'}` },
+      React.createElement(Icon, { name: pos ? 'arrow_up' : 'arrow_down', size:12 }),
+      `${Math.abs(change)}% vs last month`
+    )
+  );
+}
+
+// ─── Dashboard Page ─────────────────────────────────────────────────────────────
+function Dashboard() {
+  const { stats, transactions } = useContext(AppCtx);
+  const lineRef = useRef(null);
+  const donutRef = useRef(null);
+  const lineChart = useRef(null);
+  const donutChart = useRef(null);
+
+  // Category spending for current month
+  const catSpend = useMemo(() => {
+    const mar = transactions.filter(t => t.date.startsWith('2025-03') && t.type==='expense');
+    const acc = {};
+    mar.forEach(t => { acc[t.category] = (acc[t.category]||0) + t.amount; });
+    return Object.entries(acc).sort((a,b)=>b[1]-a[1]);
+  }, [transactions]);
+
+  // Daily balance trend for March
+  const trendData = useMemo(() => {
+    const days = ['Mar 1','Mar 5','Mar 10','Mar 15','Mar 20','Mar 25','Mar 30'];
+    const dates = ['2025-03-01','2025-03-05','2025-03-10','2025-03-15','2025-03-20','2025-03-25','2025-03-30'];
+    return days.map((label, i) => {
+      const cutoff = dates[i];
+      const txs = transactions.filter(t => t.date.startsWith('2025-03') && t.date <= cutoff);
+      const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+      const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+      return { label, balance: inc - exp };
+    });
+  }, [transactions]);
+
+  useEffect(() => {
+    if (!lineRef.current) return;
+    if (lineChart.current) lineChart.current.destroy();
+    lineChart.current = new Chart(lineRef.current, {
+      type: 'line',
+      data: {
+        labels: trendData.map(d => d.label),
+        datasets: [{
+          label: 'Balance',
+          data: trendData.map(d => d.balance),
+          borderColor: '#7c6ff7',
+          backgroundColor: 'rgba(124,111,247,0.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#7c6ff7',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#1f2640',
+          titleColor: '#8a93b2',
+          bodyColor: '#f0f2f8',
+          borderColor: 'rgba(255,255,255,0.12)',
+          borderWidth: 1,
+          callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') }
+        }},
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555f82', font: { size: 11 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555f82', font: { size: 11 },
+            callback: v => '₹' + (v/1000).toFixed(0) + 'k'
+          } }
+        }
+      }
+    });
+    return () => { if (lineChart.current) lineChart.current.destroy(); };
+  }, [trendData]);
+
+  useEffect(() => {
+    if (!donutRef.current || !catSpend.length) return;
+    if (donutChart.current) donutChart.current.destroy();
+    const colors = ['#7c6ff7','#f45c7a','#f0a444','#4898e8','#2dd4a0','#8a93b2','#a096ff'];
+    donutChart.current = new Chart(donutRef.current, {
+      type: 'doughnut',
+      data: {
+        labels: catSpend.map(c=>c[0]),
+        datasets: [{ data: catSpend.map(c=>c[1]), backgroundColor: colors.slice(0,catSpend.length), borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1f2640', titleColor: '#8a93b2', bodyColor: '#f0f2f8',
+            borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1,
+            callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN') }
+          }
+        }
+      }
+    });
+    return () => { if (donutChart.current) donutChart.current.destroy(); };
+  }, [catSpend]);
+
+  const donutColors = ['#7c6ff7','#f45c7a','#f0a444','#4898e8','#2dd4a0','#8a93b2','#a096ff'];
+
+  return React.createElement('div', null,
+    // Summary cards
+    React.createElement('div', { className:'section' },
+      React.createElement('div', { className:'section-header' },
+        React.createElement('div', null,
+          React.createElement('div', { className:'section-title' }, 'March 2025 Overview'),
+          React.createElement('div', { className:'section-sub' }, 'Your monthly financial snapshot')
+        )
+      ),
+      React.createElement('div', { className:'cards-grid' },
+        React.createElement(StatCard, { label:'Total Balance', value:fmt(stats.balance), type:'balance', icon:'💎' }),
+        React.createElement(StatCard, { label:'Total Income', value:fmt(stats.income), type:'income', change:stats.incomeChange, icon:'📈' }),
+        React.createElement(StatCard, { label:'Total Expenses', value:fmt(stats.expense), type:'expense', change:stats.expenseChange, icon:'📉' }),
+        React.createElement(StatCard, { label:'Savings Rate', value:stats.savings+'%', type:'savings', icon:'🏦' }),
+      )
+    ),
+
+    // Charts
+    React.createElement('div', { className:'charts-row' },
+      React.createElement('div', { className:'chart-card' },
+        React.createElement('div', { className:'chart-title' }, 'Balance Trend'),
+        React.createElement('div', { className:'chart-sub' }, 'Cumulative balance — March 2025'),
+        React.createElement('div', { style:{ position:'relative', height:'220px' } },
+          React.createElement('canvas', { ref: lineRef })
+        )
+      ),
+      React.createElement('div', { className:'chart-card' },
+        React.createElement('div', { className:'chart-title' }, 'Spending by Category'),
+        React.createElement('div', { className:'chart-sub' }, 'March 2025 expenses'),
+        React.createElement('div', { className:'donut-wrapper' },
+          React.createElement('canvas', { ref: donutRef }),
+          React.createElement('div', { className:'donut-center' },
+            React.createElement('div', { className:'donut-center-val' }, fmt(stats.expense)),
+            React.createElement('div', { className:'donut-center-label' }, 'Total spent')
+          )
+        ),
+        catSpend.length > 0 && React.createElement('div', { className:'chart-legend', style:{ marginTop:8 } },
+          catSpend.slice(0,4).map((c,i) =>
+            React.createElement('div', { key:c[0], className:'legend-item' },
+              React.createElement('div', { className:'legend-dot', style:{ background: donutColors[i] } }),
+              `${c[0]} ${Math.round(c[1]/stats.expense*100)}%`
+            )
+          )
+        )
+      )
+    ),
+
+    // Bar chart: income vs expense by month
+    React.createElement(MonthlyBarChart, { stats })
+  );
+}
+
+function MonthlyBarChart({ stats }) {
+  const barRef = useRef(null);
+  const barChart = useRef(null);
+
+  useEffect(() => {
+    if (!barRef.current) return;
+    if (barChart.current) barChart.current.destroy();
+    barChart.current = new Chart(barRef.current, {
+      type: 'bar',
+      data: {
+        labels: ['February', 'March'],
+        datasets: [
+          { label: 'Income', data: [stats.febIncome, stats.income], backgroundColor: 'rgba(45,212,160,0.75)', borderRadius: 6, borderSkipped: false },
+          { label: 'Expenses', data: [stats.febExpense, stats.expense], backgroundColor: 'rgba(244,92,122,0.75)', borderRadius: 6, borderSkipped: false },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1f2640', titleColor: '#8a93b2', bodyColor: '#f0f2f8',
+            borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1,
+            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ₹' + ctx.parsed.y.toLocaleString('en-IN') }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#555f82', font: { size: 12 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555f82', font: { size: 11 }, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+        }
+      }
+    });
+    return () => { if (barChart.current) barChart.current.destroy(); };
+  }, [stats]);
+
+  return React.createElement('div', { className:'chart-card' },
+    React.createElement('div', { style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'4px' } },
+      React.createElement('div', { className:'chart-title' }, 'Monthly Comparison'),
+      React.createElement('div', { className:'chart-legend' },
+        React.createElement('div', { className:'legend-item' },
+          React.createElement('div', { className:'legend-dot', style:{ background:'rgba(45,212,160,0.75)' } }), 'Income'),
+        React.createElement('div', { className:'legend-item' },
+          React.createElement('div', { className:'legend-dot', style:{ background:'rgba(244,92,122,0.75)' } }), 'Expenses'),
+      )
+    ),
+    React.createElement('div', { className:'chart-sub' }, 'Income vs Expenses — Feb & Mar 2025'),
+    React.createElement('div', { style:{ position:'relative', height:'200px' } },
+      React.createElement('canvas', { ref: barRef })
+    )
+  );
+}
+
+// ─── Transactions Page ──────────────────────────────────────────────────────────
+function Transactions() {
+  const { role, transactions, addTx, deleteTx } = useContext(AppCtx);
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [filterCat, setFilterCat] = useState('all');
+  const [sortField, setSortField] = useState('date');
+  const [sortDir, setSortDir] = useState('desc');
+  const [showModal, setShowModal] = useState(false);
+
+  const filtered = useMemo(() => {
+    let data = [...transactions];
+    if (search) data = data.filter(t => t.desc.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()));
+    if (filterType !== 'all') data = data.filter(t => t.type === filterType);
+    if (filterCat !== 'all') data = data.filter(t => t.category === filterCat);
+    data.sort((a,b) => {
+      let va = a[sortField], vb = b[sortField];
+      if (sortField === 'amount') { va = +va; vb = +vb; }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return data;
+  }, [transactions, search, filterType, filterCat, sortField, sortDir]);
+
+  const handleSort = (field) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('desc'); }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return ' ↕';
+    return sortDir === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  return React.createElement('div', null,
+    role === 'viewer' && React.createElement('div', { className:'viewer-note' },
+      React.createElement(Icon, { name:'eye', size:14 }), 'Viewer mode — read only. Switch to Admin to add or delete transactions.'
+    ),
+
+    React.createElement('div', { className:'section-header' },
+      React.createElement('div', null,
+        React.createElement('div', { className:'section-title' }, 'All Transactions'),
+        React.createElement('div', { className:'section-sub' }, `${filtered.length} of ${transactions.length} transactions`)
+      ),
+      role === 'admin' && React.createElement('button', { className:'btn btn-primary', onClick:() => setShowModal(true) },
+        React.createElement(Icon, { name:'add', size:14 }), 'Add Transaction'
+      )
+    ),
+
+    React.createElement('div', { className:'tx-controls' },
+      React.createElement('input', {
+        className: 'search-box',
+        placeholder: '🔍  Search by name or category...',
+        value: search,
+        onChange: e => setSearch(e.target.value)
+      }),
+      React.createElement('select', { className:'filter-select', value:filterType, onChange:e=>setFilterType(e.target.value) },
+        React.createElement('option', { value:'all' }, 'All Types'),
+        React.createElement('option', { value:'income' }, 'Income'),
+        React.createElement('option', { value:'expense' }, 'Expense'),
+      ),
+      React.createElement('select', { className:'filter-select', value:filterCat, onChange:e=>setFilterCat(e.target.value) },
+        React.createElement('option', { value:'all' }, 'All Categories'),
+        CATEGORIES.map(c => React.createElement('option', { key:c, value:c }, c))
+      ),
+    ),
+
+    React.createElement('div', { className:'tx-table-wrap' },
+      filtered.length === 0
+        ? React.createElement('div', { className:'empty-state' },
+            React.createElement('div', { className:'empty-icon' }, '🔍'),
+            React.createElement('div', { className:'empty-text' }, 'No transactions match your filters')
+          )
+        : React.createElement('table', { className:'tx-table' },
+            React.createElement('thead', null,
+              React.createElement('tr', null,
+                React.createElement('th', { onClick:()=>handleSort('date'), className:sortField==='date'?'sorted':'' }, 'Date', React.createElement(SortIcon, { field:'date' })),
+                React.createElement('th', null, 'Description'),
+                React.createElement('th', { onClick:()=>handleSort('category'), className:sortField==='category'?'sorted':'' }, 'Category', React.createElement(SortIcon, { field:'category' })),
+                React.createElement('th', null, 'Type'),
+                React.createElement('th', { onClick:()=>handleSort('amount'), className:sortField==='amount'?'sorted':'' }, 'Amount', React.createElement(SortIcon, { field:'amount' })),
+                role === 'admin' && React.createElement('th', null, ''),
+              )
+            ),
+            React.createElement('tbody', null,
+              filtered.map(tx =>
+                React.createElement('tr', { key:tx.id },
+                  React.createElement('td', null, React.createElement('div', { className:'tx-date' }, fmtDate(tx.date))),
+                  React.createElement('td', null,
+                    React.createElement('div', { className:'tx-desc' }, tx.desc),
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('span', { className:`tx-cat-badge ${catClass(tx.category)}` },
+                      CAT_ICONS[tx.category], ' ', tx.category
+                    )
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('span', { className:`type-badge ${tx.type}` }, tx.type)
+                  ),
+                  React.createElement('td', null,
+                    React.createElement('div', { className:`tx-amount ${tx.type}` },
+                      tx.type === 'income' ? '+' : '-', fmt(tx.amount)
+                    )
+                  ),
+                  role === 'admin' && React.createElement('td', null,
+                    React.createElement('button', { className:'delete-btn', onClick:()=>deleteTx(tx.id), title:'Delete' }, '🗑')
+                  )
+                )
+              )
+            )
+          )
+    ),
+
+    showModal && React.createElement(AddTxModal, { onClose:()=>setShowModal(false), onAdd:addTx })
+  );
+}
+
+function AddTxModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({ desc:'', amount:'', date:'', type:'expense', category:'Food' });
+  const set = (k,v) => setForm(f => ({...f,[k]:v}));
+
+  const cats = form.type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
+
+  const submit = () => {
+    if (!form.desc || !form.amount || !form.date) return;
+    onAdd({ desc:form.desc, amount:parseFloat(form.amount), date:form.date, type:form.type, category:form.category });
+    onClose();
+  };
+
+  return React.createElement('div', { className:'modal-backdrop', onClick:e=>{ if(e.target===e.currentTarget) onClose(); } },
+    React.createElement('div', { className:'modal' },
+      React.createElement('div', { className:'modal-title' }, 'Add Transaction'),
+      React.createElement('div', { className:'form-group' },
+        React.createElement('label', { className:'form-label' }, 'Description'),
+        React.createElement('input', { className:'form-input', placeholder:'e.g. Monthly Salary', value:form.desc, onChange:e=>set('desc',e.target.value) })
+      ),
+      React.createElement('div', { className:'form-row' },
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', { className:'form-label' }, 'Amount (₹)'),
+          React.createElement('input', { className:'form-input', type:'number', placeholder:'0', value:form.amount, onChange:e=>set('amount',e.target.value) })
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', { className:'form-label' }, 'Date'),
+          React.createElement('input', { className:'form-input', type:'date', value:form.date, onChange:e=>set('date',e.target.value) })
+        )
+      ),
+      React.createElement('div', { className:'form-row' },
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', { className:'form-label' }, 'Type'),
+          React.createElement('select', { className:'form-input', value:form.type, onChange:e=>{ set('type',e.target.value); set('category', e.target.value==='expense'?'Food':'Salary'); } },
+            React.createElement('option', { value:'expense' }, 'Expense'),
+            React.createElement('option', { value:'income' }, 'Income'),
+          )
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', { className:'form-label' }, 'Category'),
+          React.createElement('select', { className:'form-input', value:form.category, onChange:e=>set('category',e.target.value) },
+            cats.map(c => React.createElement('option', { key:c, value:c }, c))
+          )
+        )
+      ),
+      React.createElement('div', { className:'modal-actions' },
+        React.createElement('button', { className:'btn', onClick:onClose }, 'Cancel'),
+        React.createElement('button', { className:'btn btn-primary', onClick:submit }, 'Add Transaction'),
+      )
+    )
+  );
+}
+
+// ─── Insights Page ──────────────────────────────────────────────────────────────
+function Insights() {
+  const { stats, transactions } = useContext(AppCtx);
+
+  const catSpend = useMemo(() => {
+    const mar = transactions.filter(t => t.date.startsWith('2025-03') && t.type==='expense');
+    const acc = {};
+    mar.forEach(t => { acc[t.category] = (acc[t.category]||0) + t.amount; });
+    return Object.entries(acc).sort((a,b)=>b[1]-a[1]);
+  }, [transactions]);
+
+  const topCat = catSpend[0] || ['N/A', 0];
+  const txCount = transactions.filter(t=>t.date.startsWith('2025-03')).length;
+  const avgTxAmt = txCount > 0 ? Math.round(stats.expense / txCount) : 0;
+  const expensePct = stats.expenseChange;
+
+  const febData = [
+    { label:'Feb Income', val:stats.febIncome, type:'income' },
+    { label:'Feb Expenses', val:stats.febExpense, type:'expense' },
+    { label:'Mar Income', val:stats.income, type:'income' },
+    { label:'Mar Expenses', val:stats.expense, type:'expense' },
+  ];
+
+  return React.createElement('div', null,
+    React.createElement('div', { className:'section-header' },
+      React.createElement('div', null,
+        React.createElement('div', { className:'section-title' }, 'Financial Insights'),
+        React.createElement('div', { className:'section-sub' }, 'Smart observations from your data')
+      )
+    ),
+
+    React.createElement('div', { className:'insights-grid', style:{ marginBottom:24 } },
+      React.createElement('div', { className:'insight-card' },
+        React.createElement('div', { className:'insight-icon', style:{ background:'rgba(244,92,122,0.15)' } }, '🔥'),
+        React.createElement('div', { className:'insight-text' },
+          React.createElement('div', { className:'insight-title' }, 'Highest Spending Category'),
+          React.createElement('div', { className:'insight-desc' }, `You spent the most on ${topCat[0]} this month`),
+          React.createElement('div', { className:'insight-val', style:{ color:'var(--red)' } }, fmt(topCat[1]))
+        )
+      ),
+      React.createElement('div', { className:'insight-card' },
+        React.createElement('div', { className:'insight-icon', style:{ background:'rgba(45,212,160,0.15)' } }, '💰'),
+        React.createElement('div', { className:'insight-text' },
+          React.createElement('div', { className:'insight-title' }, 'Savings Rate'),
+          React.createElement('div', { className:'insight-desc' }, stats.savings >= 20 ? 'Great job! You\'re saving above 20%.' : 'Try to save at least 20% of income.'),
+          React.createElement('div', { className:'insight-val', style:{ color:'var(--green)' } }, stats.savings + '%')
+        )
+      ),
+      React.createElement('div', { className:'insight-card' },
+        React.createElement('div', { className:'insight-icon', style:{ background:'rgba(72,152,232,0.15)' } }, '📊'),
+        React.createElement('div', { className:'insight-text' },
+          React.createElement('div', { className:'insight-title' }, 'Avg Transaction'),
+          React.createElement('div', { className:'insight-desc' }, `${txCount} transactions this month`),
+          React.createElement('div', { className:'insight-val', style:{ color:'var(--blue)' } }, fmt(avgTxAmt))
+        )
+      ),
+      React.createElement('div', { className:'insight-card' },
+        React.createElement('div', { className:'insight-icon', style:{ background:'rgba(240,164,68,0.15)' } }, expensePct > 0 ? '📈' : '📉'),
+        React.createElement('div', { className:'insight-text' },
+          React.createElement('div', { className:'insight-title' }, 'Expense Trend'),
+          React.createElement('div', { className:'insight-desc' }, `Expenses ${expensePct > 0 ? 'increased' : 'decreased'} vs February`),
+          React.createElement('div', { className:'insight-val', style:{ color: expensePct > 0 ? 'var(--red)' : 'var(--green)' } }, (expensePct > 0 ? '+' : '') + expensePct + '%')
+        )
+      ),
+    ),
+
+    // Spending breakdown progress bars
+    React.createElement('div', { className:'chart-card', style:{ marginBottom:20 } },
+      React.createElement('div', { className:'chart-title' }, 'Spending Breakdown'),
+      React.createElement('div', { className:'chart-sub', style:{ marginBottom:20 } }, 'Where your money goes — March 2025'),
+      catSpend.map((c, i) => {
+        const pct = stats.expense > 0 ? Math.round(c[1]/stats.expense*100) : 0;
+        const colors = ['#7c6ff7','#f45c7a','#f0a444','#4898e8','#2dd4a0','#8a93b2'];
+        return React.createElement('div', { key:c[0], className:'progress-bar-wrap', style:{ marginBottom:14 } },
+          React.createElement('div', { className:'progress-bar-label' },
+            React.createElement('span', null, CAT_ICONS[c[0]] + ' ' + c[0]),
+            React.createElement('span', null, fmt(c[1]) + ' (' + pct + '%)')
+          ),
+          React.createElement('div', { className:'progress-bar-track' },
+            React.createElement('div', { className:'progress-bar-fill', style:{ width:pct+'%', background: colors[i % colors.length] } })
+          )
+        );
+      })
+    ),
+
+    // Monthly comparison table
+    React.createElement('div', { className:'chart-card' },
+      React.createElement('div', { className:'chart-title' }, 'Month-over-Month Comparison'),
+      React.createElement('div', { className:'chart-sub', style:{ marginBottom:16 } }, 'February vs March 2025'),
+      React.createElement('table', { className:'monthly-table' },
+        React.createElement('thead', null,
+          React.createElement('tr', null,
+            React.createElement('th', null, 'Metric'),
+            React.createElement('th', null, 'February'),
+            React.createElement('th', null, 'March'),
+            React.createElement('th', null, 'Change'),
+          )
+        ),
+        React.createElement('tbody', null,
+          [
+            { label:'Total Income', feb:stats.febIncome, mar:stats.income },
+            { label:'Total Expenses', feb:stats.febExpense, mar:stats.expense },
+            { label:'Net Savings', feb:stats.febIncome-stats.febExpense, mar:stats.income-stats.expense },
+          ].map(row => {
+            const diff = row.mar - row.feb;
+            const pct = row.feb > 0 ? Math.round(diff/row.feb*100) : 0;
+            const isPositive = row.label === 'Total Expenses' ? diff < 0 : diff > 0;
+            return React.createElement('tr', { key:row.label },
+              React.createElement('td', { style:{ fontWeight:500 } }, row.label),
+              React.createElement('td', { style:{ color:'var(--text2)' } }, fmt(row.feb)),
+              React.createElement('td', null, fmt(row.mar)),
+              React.createElement('td', { style:{ color: isPositive ? 'var(--green)' : 'var(--red)', fontWeight:600, fontSize:13 } },
+                (diff > 0 ? '+' : '') + pct + '%'
+              )
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
+// ─── App Shell ──────────────────────────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { role, setRole, notification } = useContext(AppCtx);
+
+  const navItems = [
+    { id:'dashboard', label:'Dashboard', icon:'dashboard' },
+    { id:'transactions', label:'Transactions', icon:'txn' },
+    { id:'insights', label:'Insights', icon:'insights' },
+  ];
+
+  const pageTitle = { dashboard:'Dashboard', transactions:'Transactions', insights:'Insights' };
+
+  return React.createElement('div', { className:'app' },
+    // Overlay for mobile
+    React.createElement('div', { className:`overlay ${sidebarOpen ? 'show':''}`, onClick:()=>setSidebarOpen(false) }),
+
+    // Sidebar
+    React.createElement('nav', { className:`sidebar ${sidebarOpen?'open':''}` },
+      React.createElement('div', { className:'sidebar-logo' },
+        React.createElement('div', { className:'logo-text' }, 'Fin', React.createElement('span', null, 'flow')),
+        React.createElement('div', { className:'logo-sub' }, 'Finance Dashboard')
+      ),
+      React.createElement('div', { className:'sidebar-nav' },
+        React.createElement('div', { className:'nav-section-label' }, 'Menu'),
+        navItems.map(item =>
+          React.createElement('button', {
+            key: item.id,
+            className: `nav-item ${page===item.id?'active':''}`,
+            onClick: () => { setPage(item.id); setSidebarOpen(false); }
+          },
+            React.createElement(Icon, { name:item.icon, size:18 }),
+            item.label
+          )
+        )
+      ),
+      React.createElement('div', { className:'sidebar-footer' },
+        React.createElement('div', { className:'role-selector' },
+          React.createElement('div', { className:'role-label' }, 'Switch Role'),
+          React.createElement('select', { className:'role-select', value:role, onChange:e=>setRole(e.target.value) },
+            React.createElement('option', { value:'admin' }, '⚡ Admin'),
+            React.createElement('option', { value:'viewer' }, '👁 Viewer'),
+          )
+        )
+      )
+    ),
+
+    // Main content
+    React.createElement('div', { className:'main' },
+      React.createElement('header', { className:'header' },
+        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:12 } },
+          React.createElement('button', { className:'hamburger', onClick:()=>setSidebarOpen(o=>!o) },
+            React.createElement(Icon, { name:'menu', size:22 })
+          ),
+          React.createElement('div', { className:'header-title' },
+            pageTitle[page],
+            React.createElement('span', null, role === 'admin' ? 'Admin Access' : 'Viewer Access')
+          )
+        ),
+        React.createElement('div', { className:'header-actions' },
+          React.createElement('span', { className:`role-badge ${role}` },
+            role === 'admin' ? (React.createElement(Icon, { name:'shield', size:11 })) : (React.createElement(Icon, { name:'eye', size:11 })),
+            role === 'admin' ? 'Admin' : 'Viewer'
+          )
+        )
+      ),
+      React.createElement('main', { className:'content' },
+        page === 'dashboard' && React.createElement(Dashboard),
+        page === 'transactions' && React.createElement(Transactions),
+        page === 'insights' && React.createElement(Insights),
+      )
+    ),
+
+    // Notification
+    notification && React.createElement('div', { className:`notif ${notification.type}` },
+      notification.type === 'success' ? '✅' : '❌', ' ', notification.msg
+    )
+  );
+}
+
+// ─── Root ───────────────────────────────────────────────────────────────────────
+function Root() {
+  return React.createElement(AppProvider, null, React.createElement(App));
+}
+
+const container = document.getElementById('root');
+const root = ReactDOM.createRoot(container);
+root.render(React.createElement(Root));
+</script>
+</body>
+</html>
