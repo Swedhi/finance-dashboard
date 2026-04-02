@@ -6,7 +6,7 @@ A responsive finance dashboard built with React and CSS.
 Open `index.html` in any browser. No installation needed.
 
 ## Live Demo
-https://yourusername.github.io/finflow-dashboard
+https://Swedhi.github.io/finflow-dashboard
 
 ## Features
 - Dashboard with balance trend and spending charts
